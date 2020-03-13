@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from "react";
+import OpenSocket from "socket.io-client";
 
 import Post from "../../components/Feed/Post/Post";
 import Button from "../../components/Button/Button";
@@ -22,7 +23,11 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch("URL")
+    fetch("http://localhost:8080/auth/status", {
+      headers: {
+        Authorization: "Bearer " + this.props.token
+      }
+    })
       .then(res => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch user status.");
@@ -35,7 +40,30 @@ class Feed extends Component {
       .catch(this.catchError);
 
     this.loadPosts();
+    // open socket
+    const socket = OpenSocket("http://localhost:8080"); // always use http coz its what socket.io binds to
+    // listen to event triggered from the server
+    socket.on("posts", data => {
+      if (data.action === "create") {
+        // update state
+        this.addPost(data.post);
+      }
+    });
   }
+
+  addPost = post => {
+    this.setState(prevState => {
+      const updatedPosts = [...prevState.posts];
+      if (prevState.postPage === 1) {
+        updatedPosts.pop();
+        updatedPosts.unshift(post);
+      }
+      return {
+        posts: updatedPosts,
+        totalPosts: prevState.totalPosts + 1
+      };
+    });
+  };
 
   loadPosts = direction => {
     if (direction) {
@@ -154,8 +182,6 @@ class Feed extends Component {
               p => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 2) {
-            updatedPosts = prevState.posts.concat(post);
           }
           return {
             posts: updatedPosts,
