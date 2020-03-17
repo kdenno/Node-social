@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import OpenSocket from "socket.io-client";
+// import OpenSocket from "socket.io-client";
 
 import Post from "../../components/Feed/Post/Post";
 import Button from "../../components/Button/Button";
@@ -40,6 +40,7 @@ class Feed extends Component {
       .catch(this.catchError);
 
     this.loadPosts();
+    /*
     // open socket
     const socket = OpenSocket("http://localhost:8080"); // always use http coz its what socket.io binds to
     // listen to event triggered from the server
@@ -51,8 +52,10 @@ class Feed extends Component {
         this.updatePost(data.post);
       }
     });
+    
+    */
   }
-
+/*
   addPost = post => {
     this.setState(prevState => {
       const updatedPosts = [...prevState.posts];
@@ -77,6 +80,7 @@ class Feed extends Component {
       return { posts: updatedPosts };
     });
   };
+  */
 
   loadPosts = direction => {
     if (direction) {
