@@ -171,26 +171,45 @@ class Feed extends Component {
     formData.append("content", postData.content);
     formData.append("image", postData.image);
 
-    fetch(url, {
+   /* fetch(url, {
       method: method,
       body: formData,
       header: {
         Authorization: "Bearer " + this.props.token
       }
+    }) */
+    const graphqlQuery = {
+      query: `{
+        mutation: {
+          createPost(postInput: {title: "${postData.title}", content: "${postData.content}", imageUrl: "some_url"}) {_id
+             title
+            content
+          creator { name }
+        createdAt
+      }
+        }
+      }`
+
+    }
+    fetch('http:localhost:8080/graphql', {
+      method: 'POST',
+      body: JSON.stringify(graphqlQuery),
+      header: {
+        Authorization: "Bearer " + this.props.token,
+        'Content-Type': "Application/json"
+      }
     })
       .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Creating or editing a post failed!");
-        }
+     
         return res.json();
       })
       .then(resData => {
         const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt
+          _id: resData.data.createPost._id,
+          title: resData.data.createPost.title,
+          content: resData.data.createPost.content,
+          creator: resData.data.createPost.creator,
+          createdAt: resData.data.createPost.createdAt
         };
         this.setState(prevState => {
           return {
