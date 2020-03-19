@@ -97,7 +97,7 @@ class Feed extends Component {
     }
     /*
     fetch("http://localhost:8080/feed/posts", {
-      header: {
+      headers: {
         Authorization: "Bearer " + this.props.token
       }
     }) 
@@ -119,7 +119,7 @@ class Feed extends Component {
     };
     fetch("http://localhost:8080/graphql", {
       method: "POST",
-      header: {
+      headers: {
         Authorization: "Bearer " + this.props.token,
         "Content-Type": "application/json"
       },
@@ -200,7 +200,7 @@ class Feed extends Component {
     /* fetch(url, {
       method: method,
       body: formData,
-      header: {
+      headers: {
         Authorization: "Bearer " + this.props.token
       }
     }) */
@@ -302,20 +302,33 @@ class Feed extends Component {
 
   deletePostHandler = postId => {
     this.setState({ postsLoading: true });
-    fetch("http://localhost:8080/feed/post/" + postId, {
+    /*fetch("http://localhost:8080/feed/post/" + postId, {
       method: "DELETE",
-      header: {
+      headers: {
         Authorization: "Bearer " + this.props.token
+      }
+    })*/
+    const graphQuery = {
+      query: `{
+        mutation: {
+          deletePost(id: "${postId}")
+        }
+      }`
+    }
+    fetch('http://localhost:8080/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json"
       }
     })
       .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Deleting a post failed!");
-        }
         return res.json();
       })
       .then(resData => {
-        console.log(resData);
+        if(resData.errors) {
+          throw new Error('Deleting Post Failed');
+        }
         this.setState(prevState => {
           const updatedPosts = prevState.posts.filter(p => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };
